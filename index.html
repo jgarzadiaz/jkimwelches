@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Click to Spawn Stickers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    /* Full-page stage with the background image */
+    #stage {
+      position: fixed;
+      inset: 0;
+      background-image: url("asset1.jpeg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    /* Stickers (copies of asset2.png) */
+    .sticker {
+      position: absolute;
+      width: 120px;     /* change this if you want bigger/smaller stickers */
+      height: auto;
+      pointer-events: none; /* so clicks pass through and keep spawning */
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="stage" aria-label="Clickable background"></div>
+
+  <script>
+    (function () {
+      const stage = document.getElementById("stage");
+      const STICKER_SRC = "asset2.png";
+      const STICKER_W = 120; // must match .sticker width in CSS
+
+      // Use pointer events so it works with mouse, touch, pen
+      stage.addEventListener("pointerdown", () => {
+        const rect = stage.getBoundingClientRect();
+
+        // Create a new image element for each click
+        const img = new Image();
+        img.src = STICKER_SRC;
+        img.className = "sticker";
+
+        // Compute a random position within the stage bounds
+        const maxX = Math.max(0, rect.width  - STICKER_W);
+        // Estimate height from width until the image loads; this keeps things snappy.
+        const estimatedH = STICKER_W; // rough square estimate; safe placement
+        const maxY = Math.max(0, rect.height - estimatedH);
+
+        const x = Math.random() * maxX;
+        const y = Math.random() * maxY;
+
+        img.style.left = x + "px";
+        img.style.top  = y + "px";
+
+        // Once the image loads, refine Y limit based on actual height
+        img.addEventListener("load", () => {
+          const h = img.naturalHeight * (STICKER_W / img.naturalWidth);
+          const safeY = Math.min(y, rect.height - h);
+          img.style.top = Math.max(0, safeY) + "px";
+        }, { once: true });
+
+        stage.appendChild(img);
+      });
+    })();
+  </script>
+</body>
+</html>
